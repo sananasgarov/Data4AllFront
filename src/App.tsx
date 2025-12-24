@@ -85,6 +85,11 @@ import DataSets from "./pages/OpenDataBase/DataSets.tsx";
 import DataSet from "./pages/OpenDataBase/DataSet.tsx";
 import OpenDataBase from "./pages/OpenDataBase/OpenDataBase.tsx";
 import SelectCategory from "./pages/OpenDataBase/SelectCategory.tsx";
+import Login1 from "./auth/Login1.tsx";
+import ForgotPasswordAdmin from "./auth/ForgotPasswordAdmin.tsx";
+import Admin_header from "./layout/Admin_header.tsx";
+import OptCode from "./auth/OptCode.tsx";
+import NewPasswordAdmin from "./auth/NewPasswordAdmin.tsx";
 
 const MainLayout = () => {
   const location = useLocation();
@@ -109,6 +114,17 @@ const MainLayout = () => {
           <Footer />
         </div>
       )}
+    </div>
+  );
+};
+
+const AdminLayout = () => {
+  return (
+    <div className="admin-page">
+      <Admin_header />
+      <main>
+        <Outlet />
+      </main>
     </div>
   );
 };
@@ -280,7 +296,18 @@ function App() {
             <Route path="receipt" element={<ReceiptDetails />} />
           </Route>
         </Route>
+
       </Route>
+
+      {/* Admin layout */}
+      <Route element={<AdminLayout />}>
+        <Route path="/login1" element={<Login1 />} />
+        <Route path="/login1/forgot-password" element={<ForgotPasswordAdmin />} />
+        <Route path="/login1/forgot-password/otp-code" element={<OptCode />} />
+        <Route path="/login1/forgot-password/new-password" element={<NewPasswordAdmin />} />
+      </Route>
+
+
 
       <Route path="*" element={<NotFound />} />
     </Routes>

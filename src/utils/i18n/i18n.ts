@@ -123,7 +123,10 @@ const resources = {
           updatedTitle: "Your password has been updated!",
           save: "Save",
           close: "Close",
-        },
+        }
+       
+
+
       }
     },
   },
@@ -249,7 +252,8 @@ const resources = {
           updatedTitle: "Şifrəniz Yeniləndi!",
           save: "Yadda saxla",
           close: "Bağla",
-        },
+        }
+        
       }
     },
   },
@@ -373,7 +377,8 @@ const resources = {
           updatedTitle: "Ваш пароль был обновлен!",
           save: "Сохранить",
           close: "Закрыть",
-        },
+        }
+
       }
     },
   },
