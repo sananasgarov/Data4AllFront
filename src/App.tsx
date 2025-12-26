@@ -87,9 +87,13 @@ import OpenDataBase from "./pages/OpenDataBase/OpenDataBase.tsx";
 import SelectCategory from "./pages/OpenDataBase/SelectCategory.tsx";
 import Login1 from "./auth/Login1.tsx";
 import ForgotPasswordAdmin from "./auth/ForgotPasswordAdmin.tsx";
-import Admin_header from "./layout/Admin_header.tsx";
 import OptCode from "./auth/OptCode.tsx";
 import NewPasswordAdmin from "./auth/NewPasswordAdmin.tsx";
+import BackgroundVideo from "./components/bg-video/BackgroundVideo.tsx";
+import SideBar from "./pages/admin/SideBar.tsx";
+import AdminLogin_header from "./layout/AdminLogin_header.tsx";
+import Dashboard from "./pages/admin/Dashboard.tsx";
+import AdminPage from "./pages/admin/AdminPage.tsx";
 
 const MainLayout = () => {
   const location = useLocation();
@@ -120,14 +124,28 @@ const MainLayout = () => {
 
 const AdminLayout = () => {
   return (
-    <div className="admin-page">
-      <Admin_header />
-      <main>
+    <div className="admin-page min-h-screen">
+      <div className="video-background">
+        <BackgroundVideo videoSrc="/about/bg-about.mp4" />
+      </div>
+      <SideBar />
+      <main className=" ml-[17vw] text-white py-[30px] px-[20px] ">
         <Outlet />
       </main>
     </div>
   );
 };
+
+const AdminLogin = () => {
+  return (
+    <div>
+      <AdminLogin_header />
+      <main>
+        <Outlet />
+      </main>
+    </div>
+  )
+}
 
 function App() {
   const { setUser } = useUser();
@@ -301,6 +319,16 @@ function App() {
 
       {/* Admin layout */}
       <Route element={<AdminLayout />}>
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/statistics" element={<Dashboard />} />
+        <Route path="/admin/chatbots" element={<Dashboard />} />
+        <Route path="/admin/reports" element={<Dashboard />} />
+        <Route path="/admin/datasets" element={<Dashboard />} />
+        <Route path="/admin/plans" element={<Dashboard />} />
+      </Route>
+
+      <Route element={<AdminLogin />}>
         <Route path="/login1" element={<Login1 />} />
         <Route path="/login1/forgot-password" element={<ForgotPasswordAdmin />} />
         <Route path="/login1/forgot-password/otp-code" element={<OptCode />} />
