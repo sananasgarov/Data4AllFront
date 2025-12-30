@@ -1,6 +1,5 @@
-import Activites from "@/pages/admin/Activites"
-import Indicators from "@/components/admin_components/indicators"
-
+import Activites from "@/components/admin_components/Activites"
+import Indicators from "@/components/admin_components/Indicators"
 function Dashboard() {
     return (
         <section className="flex flex-col gap-10 min-h-[90vh] justify-between">

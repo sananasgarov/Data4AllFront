@@ -94,6 +94,9 @@ import SideBar from "./pages/admin/SideBar.tsx";
 import AdminLogin_header from "./layout/AdminLogin_header.tsx";
 import Dashboard from "./pages/admin/Dashboard.tsx";
 import AdminPage from "./pages/admin/AdminPage.tsx";
+import ReportsPage from "./pages/admin/ReportsPage.tsx";
+import SingleReportPage from "./pages/admin/SingleReportPage.tsx";
+import AltCategoryPage from "./pages/admin/AltCategoryPage.tsx";
 
 const MainLayout = () => {
   const location = useLocation();
@@ -323,7 +326,9 @@ function App() {
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/statistics" element={<Dashboard />} />
         <Route path="/admin/chatbots" element={<Dashboard />} />
-        <Route path="/admin/reports" element={<Dashboard />} />
+        <Route path="/admin/reports" element={<ReportsPage />} />
+        <Route path="/admin/reports/:subTitle" element={<SingleReportPage />} />
+        <Route path="/admin/reports/:subTitle/:path" element={<AltCategoryPage/>} />
         <Route path="/admin/datasets" element={<Dashboard />} />
         <Route path="/admin/plans" element={<Dashboard />} />
       </Route>

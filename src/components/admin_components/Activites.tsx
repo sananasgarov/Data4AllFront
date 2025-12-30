@@ -13,7 +13,7 @@ function Activites() {
         <p>FƏALİYYƏTLƏR</p>
         <p>TARİX</p>
       </div>
-      <div className="overflow-x-scroll">
+      <div className="overflow-x-scroll md:overflow-x-hidden">
         {
           data.map((item) => {
             return (

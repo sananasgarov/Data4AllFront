@@ -8,7 +8,7 @@ function SideBar() {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
-        <header className={`${isOpen ? "w-[50vw] md:w-[18vw]" : "w-[18vw]"} duration-300 fixed flex flex-col justify-between  text-white bg-[#070618]  md:pr-5 min-h-screen`}>
+        <header className={`${isOpen ? "w-[50vw] md:w-[18vw]" : "w-[18vw]"} z-40 duration-300 fixed flex flex-col justify-between  text-white bg-[#070618]  md:pr-5 min-h-screen`}>
             <Link to={"/admin"} className="md:block hidden">
                 <img src="/logo.svg" alt="Logo" className="logo p-5" />
                 <hr className="h-[1px] w-full  bg-[#93939321]" />

@@ -1,5 +1,5 @@
-import Activites from "@/pages/admin/Activites"
-import Indicators from "@/components/admin_components/indicators"
+import Activites from "@/components/admin_components/Activites"
+import Indicators from "@/components/admin_components/Indicators"
 
 function AdminPage() {
   return (
