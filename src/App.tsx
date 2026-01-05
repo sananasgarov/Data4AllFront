@@ -97,6 +97,11 @@ import AdminPage from "./pages/admin/AdminPage.tsx";
 import ReportsPage from "./pages/admin/ReportsPage.tsx";
 import SingleReportPage from "./pages/admin/SingleReportPage.tsx";
 import AltCategoryPage from "./pages/admin/AltCategoryPage.tsx";
+import SubscriptionPage from "./pages/admin/SubscriptionsPage.tsx";
+import FaqDashboard from "./pages/admin/FAQPage.tsx";
+import DataSetForm from "./pages/admin/DataSetForm.tsx";
+import DatasetsPage from "./pages/admin/DatasetsPage.tsx";
+import QuestionPage from "./pages/admin/QuestionPage.tsx";
 
 const MainLayout = () => {
   const location = useLocation();
@@ -325,12 +330,15 @@ function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/statistics" element={<Dashboard />} />
-        <Route path="/admin/chatbots" element={<Dashboard />} />
+        <Route path="/admin/chatbots" element={<FaqDashboard/>} />
         <Route path="/admin/reports" element={<ReportsPage />} />
         <Route path="/admin/reports/:subTitle" element={<SingleReportPage />} />
         <Route path="/admin/reports/:subTitle/:path" element={<AltCategoryPage/>} />
-        <Route path="/admin/datasets" element={<Dashboard />} />
-        <Route path="/admin/plans" element={<Dashboard />} />
+                <Route path="/admin/dataSets" element={<DatasetsPage/>} />
+        <Route path="/admin/plans" element={<SubscriptionPage/>} />
+                <Route path="/admin/commonQuestion" element={<DataSetForm/>} />
+                <Route path="/admin/questionPage" element={<QuestionPage/>} />
+
       </Route>
 
       <Route element={<AdminLogin />}>
