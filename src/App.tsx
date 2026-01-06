@@ -97,6 +97,11 @@ import AdminPage from "./pages/admin/AdminPage.tsx";
 import ReportsPage from "./pages/admin/ReportsPage.tsx";
 import SingleReportPage from "./pages/admin/SingleReportPage.tsx";
 import AltCategoryPage from "./pages/admin/AltCategoryPage.tsx";
+import AnaliticsPage from "./pages/admin/AnaliticsPage.tsx";
+import AnaliticsAltCategory from "./pages/admin/AnaliticsAltCategory.tsx";
+import AnaliticsDataPage from "./pages/admin/AnaliticsDataPage.tsx";
+import OpenDBPage from "./pages/admin/OpenDBPage.tsx";
+import OpenDBSinglePage from "./pages/admin/OpenDBSinglePage.tsx";
 
 const MainLayout = () => {
   const location = useLocation();
@@ -324,12 +329,16 @@ function App() {
       <Route element={<AdminLayout />}>
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/analitics" element={<AnaliticsPage />} />
+        <Route path="/admin/analitics/:subTitle" element={<AnaliticsAltCategory />}/>
+        <Route path="/admin/analitics/:subTitle/:path" element={<AnaliticsDataPage />}/>
         <Route path="/admin/statistics" element={<Dashboard />} />
         <Route path="/admin/chatbots" element={<Dashboard />} />
         <Route path="/admin/reports" element={<ReportsPage />} />
         <Route path="/admin/reports/:subTitle" element={<SingleReportPage />} />
         <Route path="/admin/reports/:subTitle/:path" element={<AltCategoryPage/>} />
-        <Route path="/admin/datasets" element={<Dashboard />} />
+        <Route path="/admin/opendatabase" element={<OpenDBPage />} />
+        <Route path="/admin/opendatabase/:path" element={<OpenDBSinglePage/>} />
         <Route path="/admin/plans" element={<Dashboard />} />
       </Route>
 

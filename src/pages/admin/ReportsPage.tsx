@@ -1,12 +1,10 @@
 import ReportCard from "@/components/admin_components/ReportCard";
-import { Input } from "@/components/ui/input";
+import TitleAddComponent from "@/components/admin_components/TitleAddComponent";
 import { cardData } from "@/constants/reports";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 function ReportsPage() {
-    
-    const [title, setTitle] = useState("")
     const [isOpenBtn, setIsOpenBtn] = useState(false)
     return (
         <section className="px-5">
@@ -30,18 +28,7 @@ function ReportsPage() {
                 </button>
                 {
                     isOpenBtn && (
-                        <form className="z-50 absolute flex flex-col w-[330px] md:w-[428px] gap-10 border-[1.5px] border-[#686868] top-[30%] right-[8%] md:right-[30%] rounded-2xl p-10 bg-[#070618]">
-                            <div className="flex flex-col gap-[10px]">
-                                <h2 className="font-semibold text-[20px]">Başlıq adı</h2>
-                                <Input value={title} onChange={(e) => { setTitle(e.target.value) }} className="resize-none  h-[69px] px-[20px] border border-[#BABABA] rounded-[6px] placeholder:text-[#BABABA]" placeholder="Başlıq 1" />
-                            </div>
-                            <div className="flex justify-end">
-                                <div className="flex items-center gap-[15px] text-[16px] font-semibold">
-                                    <button onClick={() => setIsOpenBtn(!isOpenBtn)} className="cursor-pointer">Ləğv et</button>
-                                    <button type="submit" onClick={() => setIsOpenBtn(!isOpenBtn)} className="bg-[#3460DC] cursor-pointer rounded-[10px] p-2 h-[46px] w-[125px]">Təsdiqlə</button>
-                                </div>
-                            </div>
-                        </form>
+                        <TitleAddComponent setIsOpen={setIsOpenBtn} title={null} />
                     )
                 }
                 {
