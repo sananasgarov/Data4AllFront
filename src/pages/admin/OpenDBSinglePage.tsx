@@ -139,7 +139,7 @@ function OpenDBSinglePage() {
                         <div className="flex flex-col gap-[10px]">
                             <Label className="text-[20px] font-semibold">Dataset faylı</Label>
                             <input type="file" className="hidden" id="file" />
-                            <Label htmlFor="file" className="border-2 border-[#373641] h-[70px] text-3xl flex justify-center items-center border-dashed rounded-[8px]">
+                            <Label htmlFor="file" className="border-2 hover:border-blue-600 dration-300 cursor-pointer border-[#373641] h-[70px] text-3xl flex justify-center items-center border-dashed rounded-[8px]">
                                 <IoCloudUploadOutline />
                             </Label>
                         </div>

@@ -12,7 +12,7 @@ function OpenDBCard() {
       {
         openDBData.map((item) => {
           return (
-            <div onClick={()=>nav(item.path)} className='cursor-pointer bg-[#070618] md:w-[353px] border-[1.5px] border-[#686868] rounded-2xl px-6 py-5 flex flex-col gap-4'>
+            <div onClick={()=>nav(item.path)} className='cursor-pointer bg-[#070618]  border-[1.5px] border-[#686868] rounded-2xl px-6 py-5 flex flex-col gap-4'>
               <div>
                 <div className="flex justify-end pb-2">
                   <div className="flex items-center gap-2 text-lg">
@@ -35,7 +35,7 @@ function OpenDBCard() {
         })
       }
 
-      <div className='bg-[#070618] md:w-[353px] h-[250px] border-dashed  border-[1.5px] border-[#686868] rounded-2xl px-6 py-5 flex justify-center items-center gap-4'>
+      <div className='bg-[#070618] h-[250px] border-dashed  border-[1.5px] border-[#686868] rounded-2xl px-6 py-5 flex justify-center items-center gap-4'>
         <FaPlus className="text-3xl" />
       </div>
     </>
