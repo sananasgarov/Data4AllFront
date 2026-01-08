@@ -25,15 +25,27 @@ export const sidebar = [
 
         },
         {
-            id: 5,
+            id:5,
+            text:"Göndərilən Datasetlər",
+            icon:"/icons/dataset.svg",
+            path:"/admin/datasets"
+        },
+        {
+            id:6,
+            text:"Analitika",
+            icon:"/icons/analitics.svg",
+            path:"/admin/analitics"
+        },
+        {
+            id: 7,
             text: "Araşdırma & Hesabatlar",
             icon: "/icons/hesabat.svg",
             path: "/admin/reports"
         },
         {
-            id: 6,
+            id: 8,
             text: "Açıq Məlumatlar Bazası",
             icon: "/icons/dataset.svg",
-            path: "/admin/datasets"
+            path: "/admin/opendatabase"
         }
     ]

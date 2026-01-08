@@ -8,6 +8,7 @@ import { useParams } from "react-router-dom"
 
 function AltCategoryPage() {
   const params = useParams();
+  
   const [isOpenAdd, setIsOpenAdd] = useState(false)
   const clickedData = cardData.find((item) => item.subTitle == params.subTitle);
   const clickedItems = clickedData?.categories.find((item) => item.pathName == params.path);

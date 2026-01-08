@@ -102,6 +102,11 @@ import FaqDashboard from "./pages/admin/FAQPage.tsx";
 import DataSetForm from "./pages/admin/DataSetForm.tsx";
 import DatasetsPage from "./pages/admin/DatasetsPage.tsx";
 import QuestionPage from "./pages/admin/QuestionPage.tsx";
+import AnaliticsPage from "./pages/admin/AnaliticsPage.tsx";
+import AnaliticsAltCategory from "./pages/admin/AnaliticsAltCategory.tsx";
+import AnaliticsDataPage from "./pages/admin/AnaliticsDataPage.tsx";
+import OpenDBPage from "./pages/admin/OpenDBPage.tsx";
+import OpenDBSinglePage from "./pages/admin/OpenDBSinglePage.tsx";
 
 const MainLayout = () => {
   const location = useLocation();
@@ -329,15 +334,24 @@ function App() {
       <Route element={<AdminLayout />}>
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
+        <Route path="/admin/analitics" element={<AnaliticsPage />} />
+        <Route path="/admin/analitics/:subTitle" element={<AnaliticsAltCategory />}/>
+        <Route path="/admin/analitics/:subTitle/:path" element={<AnaliticsDataPage />}/>
         <Route path="/admin/statistics" element={<Dashboard />} />
         <Route path="/admin/chatbots" element={<FaqDashboard/>} />
         <Route path="/admin/reports" element={<ReportsPage />} />
         <Route path="/admin/reports/:subTitle" element={<SingleReportPage />} />
         <Route path="/admin/reports/:subTitle/:path" element={<AltCategoryPage/>} />
+
                 <Route path="/admin/dataSets" element={<DatasetsPage/>} />
         <Route path="/admin/plans" element={<SubscriptionPage/>} />
                 <Route path="/admin/commonQuestion" element={<DataSetForm/>} />
                 <Route path="/admin/questionPage" element={<QuestionPage/>} />
+
+
+        <Route path="/admin/opendatabase" element={<OpenDBPage />} />
+        <Route path="/admin/opendatabase/:path" element={<OpenDBSinglePage/>} />
+        <Route path="/admin/plans" element={<Dashboard />} />
 
       </Route>
 

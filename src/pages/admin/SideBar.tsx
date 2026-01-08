@@ -8,7 +8,7 @@ function SideBar() {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
-        <header className={`${isOpen ? "w-[50vw] md:w-[18vw]" : "w-[18vw]"} z-40 duration-300 fixed flex flex-col justify-between  text-white bg-[#070618]  md:pr-5 min-h-screen`}>
+        <header className={`${isOpen ? "w-[50vw] md:w-[18vw]" : "w-[18vw]"} z-10 duration-300 fixed flex flex-col justify-between  text-white bg-[#070618]  md:pr-5 min-h-screen`}>
             <Link to={"/admin"} className="md:block hidden">
                 <img src="/logo.svg" alt="Logo" className="logo p-5" />
                 <hr className="h-[1px] w-full  bg-[#93939321]" />
@@ -39,13 +39,13 @@ function SideBar() {
             </div>
 
             <div>
-                <Link to="/admin" className="flex items-center gap-3 hover:bg-[#3460DC] px-6 py-3">
-                    <img src="/icons/profil.svg" alt="" />
+                <Link to="/admin" onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-3 hover:bg-[#3460DC] px-6 py-3">
+                    <img src="/icons/profil.svg" alt="icon" />
                     <p className={`${isOpen ? "translate-x-0" : "translate-x-[-70vw]"} md:translate-x-0 text-[16px] md:flex`}>Profil</p>
                 </Link>
 
-                <Link to="/admin" className="flex items-center gap-3 hover:bg-[#3460DC] px-6 py-3">
-                    <img src="/icons/logout.svg" alt="" />
+                <Link to="/admin" onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-3 hover:bg-[#3460DC] px-6 py-3">
+                    <img src="/icons/logout.svg" alt="icon" />
                     <p className={`${isOpen ? "translate-x-0" : "translate-x-[-70vw]"} md:translate-x-0 md:flex  text-[16px]`}>Çıxış</p>
                 </Link>
             </div>
