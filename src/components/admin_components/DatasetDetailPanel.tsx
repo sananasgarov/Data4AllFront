@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import { FiX, FiUpload, FiUser, FiPhone, FiFile, FiCheckCircle, FiClock, FiDatabase, FiDownload } from 'react-icons/fi';
 
 interface DatasetDetailPanelProps {
   onClose: () => void;
+  dataSetName?: string;
+  datasetId?: string;
   datasetData?: {
     id: string;
     fullName: string;
@@ -13,10 +16,50 @@ interface DatasetDetailPanelProps {
   };
 }
 
-const DatasetDetailPanel: React.FC<DatasetDetailPanelProps> = ({ onClose, datasetData }) => {
+const DatasetDetailPanel: React.FC<DatasetDetailPanelProps> = ({ onClose, datasetData, dataSetName, datasetId }) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fetchedData, setFetchedData] = useState<any>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (datasetId) {
+      const fetchDatasetDetails = async () => {
+        try {
+          // TODO: Silinəcək müvəqqəti tokenlər
+          const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+          
+          const response = await axios.get(`http://45.94.4.187:8081/api/v1/dashboard/get/${datasetId}`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          setFetchedData(response.data);
+        } catch (error) {
+          console.error("Error fetching dataset details:", error);
+        }
+      };
+      
+      fetchDatasetDetails();
+    } else if (dataSetName) {
+      // Fallback to old behavior if datasetId is missing but Name exists
+      const fetchDatasetDetailsByName = async () => {
+        try {
+           const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+          
+          const response = await axios.get(`http://45.94.4.187:8081/api/v1/dataset/get/${dataSetName}`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          setFetchedData(response.data);
+        } catch (error) {
+          console.error("Error fetching dataset details by name:", error);
+        }
+      };
+       fetchDatasetDetailsByName();
+    }
+  }, [datasetId, dataSetName]);
 
   // Default məlumatlar
   const defaultData = {
@@ -28,7 +71,39 @@ const DatasetDetailPanel: React.FC<DatasetDetailPanelProps> = ({ onClose, datase
     mentorName: 'Ayşə Məmmədova'
   };
 
-  const data = datasetData || defaultData;
+  const getStatusText = (status: string) => {
+    const statusMap: Record<string, 'təyin olunub' | 'təyin olunmayıb' | 'icradadır'> = {
+      'not_assigned': 'təyin olunmayıb',
+      'PENDING': 'təyin olunmayıb',
+      'in_progress': 'icradadır',
+      'completed': 'təyin olunub',
+      'təyin olunmayıb': 'təyin olunmayıb',
+      'icradadır': 'icradadır',
+      'təyin olunub': 'təyin olunub'
+    };
+    return statusMap[status] || 'təyin olunmayıb';
+  };
+
+  const processData = () => {
+    if (fetchedData) {
+      // Check if it's the Intern schema with dataSets
+      const dataSet = fetchedData.dataSets && fetchedData.dataSets.length > 0 ? fetchedData.dataSets[0] : {};
+      
+      const rawStatus = dataSet.status || fetchedData.status;
+
+      return {
+        id: fetchedData.id?.toString() || datasetData?.id || defaultData.id,
+        fullName: fetchedData.name ? (fetchedData.surname ? `${fetchedData.name} ${fetchedData.surname}` : fetchedData.name) : fetchedData.fullName || datasetData?.fullName || defaultData.fullName,
+        status: getStatusText(rawStatus),
+        fileSize: fetchedData.fileSize || datasetData?.fileSize || defaultData.fileSize,
+        phone: fetchedData.phone || datasetData?.phone || defaultData.phone,
+        mentorName: dataSet.internName || fetchedData.interns?.[0] || fetchedData.mentorName || datasetData?.mentorName || defaultData.mentorName
+      };
+    }
+    return datasetData || defaultData;
+  };
+
+  const data = processData();
 
   // Escape tuşu ilə bağlama
   useEffect(() => {
@@ -106,7 +181,8 @@ const DatasetDetailPanel: React.FC<DatasetDetailPanelProps> = ({ onClose, datase
     }
   };
 
-  const StatusIcon = statusConfig[data.status].icon;
+  const activeStatusConfig = statusConfig[data.status] || statusConfig['təyin olunmayıb'];
+  const StatusIcon = activeStatusConfig.icon;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-2 xs:p-3 sm:p-4 bg-black/70 backdrop-blur-md overflow-y-auto">
@@ -149,11 +225,11 @@ const DatasetDetailPanel: React.FC<DatasetDetailPanelProps> = ({ onClose, datase
             {/* Status */}
             <div className="mb-4 sm:mb-5 md:mb-6">
               <h3 className="text-xs sm:text-sm font-medium text-gray-300 mb-1.5 sm:mb-2">Status</h3>
-              <div className={`${statusConfig[data.status].bgColor} border ${statusConfig[data.status].borderColor} rounded-lg px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between`}>
+              <div className={`${activeStatusConfig.bgColor} border ${activeStatusConfig.borderColor} rounded-lg px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between`}>
                 <div className="flex items-center">
-                  <StatusIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 ${statusConfig[data.status].color}`} />
-                  <span className={`font-medium text-sm sm:text-base ${statusConfig[data.status].color}`}>
-                    {statusConfig[data.status].text}
+                  <StatusIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 ${activeStatusConfig.color}`} />
+                  <span className={`font-medium text-sm sm:text-base ${activeStatusConfig.color}`}>
+                    {activeStatusConfig.text}
                   </span>
                 </div>
               </div>

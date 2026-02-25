@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InternManagementPanel from "../../components/admin_components/İnternScchedule";
 import DatasetDetailPanel from "./DatasetDetailPanel";
 import { useNavigate } from 'react-router-dom';
-
+import axios from "axios"
 interface Dataset {
   id: number;
   name: string;
@@ -13,42 +13,65 @@ interface Dataset {
 }
 
 const DatasetsTable = () => {
-      const navigate = useNavigate(); // Hook-u istifadə edin
+      const navigate = useNavigate(); 
 
-  const [datasets, setDatasets] = useState<Dataset[]>([
-    {
-      id: 1,
-      name: "Əli",
-      surname: "Məmmədov",
-      fileName: "müştəri_məlumatları.xlsx",
-      status: 'in_progress',
-      interns: ["Aydın Əliyev", "Nərmin Həsənova"]
-    },
-    {
-      id: 2,
-      name: "Leyla",
-      surname: "Hüseynova",
-      fileName: "satış_statistikası.csv",
-      status: 'not_assigned',
-      interns: ["Aydın Əliyev", "Nərmin Həsənova"]
-    },
-    {
-      id: 3,
-      name: "Rəşad",
-      surname: "Quliyev",
-      fileName: "məhsul_kataloqu.pdf",
-      status: 'completed',
-      interns: ["Kəmalə Əhmədova"]
-    },
-    {
-      id: 4,
-      name: "Günay",
-      surname: "Ələkbərova",
-      fileName: "audit_hesabatı.docx",
-      status: 'in_progress',
-      interns: ["Elvin Məmmədov", "Səbinə Rzayeva"]
-    },
-  ]);
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
+  const [availableInterns, setAvailableInterns] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchDatasets = async () => {
+      try {
+        const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+        
+        // Fetch Available Interns
+        try {
+            const internResponse = await axios.get("http://45.94.4.187:8081/api/v1/intern", {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const internsList = internResponse.data.map((i: any) => {
+              const safeSurname = (i.surname && i.surname !== 'undefined' && i.surname !== 'null') ? i.surname : '';
+              return safeSurname ? `${i.name} ${safeSurname}` : i.name;
+            });
+            setAvailableInterns(internsList);
+        } catch (internError) {
+            console.error("Error fetching interns:", internError);
+        }
+
+        /*
+        // const refreshToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzY5ODY1MzY0LCJleHAiOjE3NzA0NzAxNjR9.nWCudcrudlTyQKBAGbJo4Ebows3EkZDlUR1Mp_pDSc8";
+
+        const response = await axios.get("http://45.94.4.187:8081/api/v1/dataset/get/all", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        const sanitizedData = response.data.map((item: any) => ({
+          id: item.id,
+          name: item.author ? item.author.split(' ')[0] : '', // Mapping author to name
+          surname: item.author ? item.author.split(' ').slice(1).join(' ') : '', // Mapping author to surname
+          fileName: item.dataSetName || item.title || 'Adsız', // Mapping dataSetName to fileName
+          status: item.status === 'PENDING' ? 'not_assigned' : (item.status === 'IN_PROGRESS' ? 'in_progress' : 'completed'), // Mapping status
+          interns: item.intern ? [item.intern.name] : [] 
+        }));
+        setDatasets(sanitizedData);
+        */
+       
+       // Fake Data Generation
+       const fakeDatasets: Dataset[] = [
+         { id: 1, name: "Ali", surname: "Valiyev", fileName: "Climate_Data_2023.csv", status: "not_assigned", interns: [] },
+         { id: 2, name: "Aysel", surname: "Mammadova", fileName: "Financial_Report_Q1.xlsx", status: "in_progress", interns: [] },
+         { id: 3, name: "Rovshan", surname: "Aliyev", fileName: "Sales_Data_2024.json", status: "completed", interns: [] },
+         { id: 4, name: "Leyla", surname: "Quliyeva", fileName: "Edu_Stats_2022.pdf", status: "not_assigned", interns: [] },
+         { id: 5, name: "Samir", surname: "Hasanov", fileName: "Health_Records_v2.csv", status: "in_progress", interns: [] },
+       ];
+       setDatasets(fakeDatasets);
+       
+      } catch (error) {
+        console.error("Error fetching datasets:", error);
+      }
+    };
+    fetchDatasets();
+  },[]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{key: string; direction: 'asc' | 'desc'} | null>(null);
@@ -61,12 +84,76 @@ const DatasetsTable = () => {
   const [selectedDatasetId, setSelectedDatasetId] = useState<number | null>(null);
   const [selectedDatasetForEdit, setSelectedDatasetForEdit] = useState<Dataset | null>(null); // Redaktə üçün dataset
 
-  // DatasetDetailPanel-i açmaq üçün funksiya
+      // DatasetDetailPanel-i açmaq üçün funksiya
     const handleEditClick = (dataset: Dataset) => {
     navigate('/admin/commonQuestion', { 
       state: { dataset } // İstəyə görə dataset məlumatlarını da göndərə bilərsiniz
     });
   };
+
+  const handleDelete = async (id: number) => {
+    try {
+      if (window.confirm("Bu məlumatı silmək istədiyinizə əminsiniz?")) {
+        /*
+        const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+        await axios.delete(`http://45.94.4.187:8081/api/v1/dashboard/datasets/${id}`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        */
+        // State-dən silirik
+        setDatasets(prev => prev.filter(d => d.id !== id));
+        console.log(`Dataset with id ${id} deleted (Simulated)`);
+      }
+    } catch (error) {
+      console.error("Silinmə zamanı xəta:", error);
+      alert("Xəta baş verdi: Silinmə uğursuz oldu");
+    }
+  };
+
+  const handleUpdateStatus = async (id: number, newStatus: string) => {
+    try {
+      /*
+      const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+      
+      // Mövcud data-nı tapırıq
+      const currentData = datasets.find(d => d.id === id);
+      if (!currentData) return;
+
+      // Statusu server formatına uyğunlaşdırırıq (əgər fərqlidirsə)
+      // Burada sadə bir PUT nümunəsi - real obyekti göndərmək lazımdır
+      // Backend schema-ya görə tam obyekti və ya sadəcə statusu göndərmək tələb oluna bilər
+      // Hazırda status yenilənməsi üçün tam obyekti göndəririk:
+      
+      const payload = {
+        ...currentData,
+        status: newStatus
+      };
+
+      await axios.put(`http://45.94.4.187:8081/api/v1/dashboard/datasets/${id}`, payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      */
+      
+      // Uğurlu olarsa state-i yeniləyirik
+       setDatasets(prev => prev.map(d => {
+        if (d.id === id) {
+          return { ...d, status: newStatus as any };
+        }
+        return d;
+      }));
+      console.log(`Status updated for dataset ${id} to ${newStatus} (Simulated)`);
+
+    } catch (error) {
+       console.error("Status yenilənməsi zamanı xəta:", error);
+       alert("Status dəyişdirilə bilmədi");
+    }
+  };
+
+
   const handleViewDatasetDetails = (datasetId: number) => {
     setSelectedDatasetId(datasetId);
     setShowDatasetDetail(true);
@@ -107,7 +194,7 @@ const DatasetsTable = () => {
     return {
       id: dataset.id.toString(),
       fullName: `${dataset.name} ${dataset.surname}`,
-      status: statusMap[dataset.status],
+      status: statusMap[dataset.status] || 'təyin olunmayıb',
       fileSize: "2.4 GB",
       phone: "+994 55 123 45 67",
       mentorName: dataset.interns.length > 0 ? dataset.interns[0] : "Təyin edilməyib"
@@ -231,6 +318,16 @@ const DatasetsTable = () => {
       ...prev,
       [datasetId]: status
     }));
+    // Backend update call
+    // status label (məs: "İcradadır") gəlir, bunu kod adına (məs: "in_progress") çevirmək lazım ola bilər
+    // Və ya birbaşa göndəririk (statusConfig-ə görə)
+     const statusMapReverse: {[key: string]: string} = {
+      'Təyin olunmayıb': 'not_assigned',
+      'İcradadır': 'in_progress',
+      'Tamamlanıb': 'completed'
+    };
+    const apiStatus = statusMapReverse[status] || status;
+    handleUpdateStatus(datasetId, apiStatus);
   };
 
   const CustomCheckbox = ({ checked, onChange }: { checked: boolean; onChange: () => void }) => {
@@ -248,9 +345,9 @@ const DatasetsTable = () => {
     );
   };
 
-  const InternDropdown = ({ datasetId, interns }: { datasetId: number, interns: string[] }) => {
+  const InternDropdown = ({ datasetId, interns = [], currentInterns = [] }: { datasetId: number, interns?: string[], currentInterns?: string[] }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const selectedValue = selectedInterns[datasetId] || (interns.length > 0 ? interns[0] : "");
+    const selectedValue = selectedInterns[datasetId] || (currentInterns && currentInterns.length > 0 ? currentInterns[0] : "");
 
     return (
       <div className="relative">
@@ -514,7 +611,7 @@ const DatasetsTable = () => {
                         </td>
                         
                         <td className="py-2 sm:py-3 px-2 sm:px-3">
-                          <InternDropdown datasetId={dataset.id} interns={dataset.interns} />
+                          <InternDropdown datasetId={dataset.id} interns={availableInterns} currentInterns={dataset.interns} />
                         </td>
                         
                         <td className="py-2 sm:py-3 px-2 sm:px-3">
@@ -544,7 +641,7 @@ const DatasetsTable = () => {
                             </button>
                             
                             <button 
-                              onClick={() => console.log(`Sil: ${dataset.id}`)}
+                              onClick={() => handleDelete(dataset.id)}
                               className="p-1 sm:p-2 hover:bg-red-500/10 text-gray-400 hover:text-red-400 rounded-lg transition-colors"
                               title="Sil"
                             >
@@ -603,6 +700,8 @@ const DatasetsTable = () => {
         <DatasetDetailPanel
           onClose={handleCloseDatasetDetail}
           datasetData={getSelectedDatasetData()}
+          dataSetName={datasets.find(d => d.id === selectedDatasetId)?.fileName}
+          datasetId={selectedDatasetId?.toString()}
         />
       )}
 

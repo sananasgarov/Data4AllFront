@@ -1,27 +1,53 @@
 // components/InternManagementPanel.tsx
 import React, { useState, useEffect } from 'react';
-import { FiEdit, FiChevronDown, FiPlus, FiX } from 'react-icons/fi';
+import { FiEdit, FiChevronDown, FiPlus, FiX, FiTrash2 } from 'react-icons/fi';
 import InternAddPanel from './Addİnten';
+import axios from 'axios';
 
 interface Intern {
   id: number;
   name: string;
   surname: string;
   phone: string;
-  level: 'Junior' | 'Middle' | 'Senior';
+  email: string;
+  status: 'JUNIOR' | 'MIDDLE' | 'SENIOR';
 }
 
 const InternManagementPanel: React.FC = () => {
-  const [interns, setInterns] = useState<Intern[]>([
-    { id: 1, name: 'Teyran', surname: 'Nağiyeva', phone: '055 323 29 23', level: 'Junior' },
-    { id: 2, name: 'Əli', surname: 'Hüseynov', phone: '070 123 45 67', level: 'Middle' },
-    { id: 3, name: 'Aysu', surname: 'Məmmədova', phone: '077 234 56 78', level: 'Senior' },
-    { id: 4, name: 'Rəşad', surname: 'Əliyev', phone: '050 345 67 89', level: 'Junior' },
-  ]);
+  const [interns, setInterns] = useState<Intern[]>([]);
+
+  useEffect(() => {
+    const fetchInterns = async () => {
+      try {
+        const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+        const response = await axios.get("http://45.94.4.187:8081/api/v1/intern", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        
+        const fetchedInterns = response.data.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          surname: item.surname,
+          phone: item.phone || "",
+          email: item.email || "",
+          status: (item.status ? item.status.toUpperCase() : 'JUNIOR') as 'JUNIOR' | 'MIDDLE' | 'SENIOR'
+        }));
+        
+        setInterns(fetchedInterns);
+      } catch (error) {
+        console.error("Error fetching interns:", error);
+      }
+    };
+
+    fetchInterns();
+  }, []);
 
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingIntern, setEditingIntern] = useState<Intern | null>(null);
 
   // Escape tuşu ilə bağlama
   useEffect(() => {
@@ -34,37 +60,126 @@ const InternManagementPanel: React.FC = () => {
     return () => window.removeEventListener('keydown', handleEsc);
   }, []);
 
-  const handleLevelChange = (id: number, newLevel: 'Junior' | 'Middle' | 'Senior') => {
-    setInterns(interns.map(intern => 
-      intern.id === id ? { ...intern, level: newLevel } : intern
-    ));
+  const handleStatusChange = async (id: number, newStatus: 'JUNIOR' | 'MIDDLE' | 'SENIOR') => {
+    try {
+      const intern = interns.find(i => i.id === id);
+      if (!intern) return;
+
+      const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+      
+      const safeSurname = (intern.surname && intern.surname !== 'undefined' && intern.surname !== 'null') ? intern.surname : '';
+      const fullName = safeSurname ? `${intern.name} ${safeSurname}` : intern.name;
+
+      await axios.put(`http://45.94.4.187:8081/api/v1/intern/${id}`, {
+        name: fullName.trim(),
+        email: intern.email,
+        phone: intern.phone,
+        status: newStatus
+      }, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+
+      setInterns(interns.map(intern => 
+        intern.id === id ? { ...intern, status: newStatus } : intern
+      ));
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
     setOpenDropdownId(null);
   };
 
   const handleEdit = (id: number) => {
-    console.log('Edit intern:', id);
+    const internToEdit = interns.find(intern => intern.id === id);
+    if (internToEdit) {
+      setEditingIntern(internToEdit);
+      setShowAddForm(true);
+    }
   };
 
   const handleAddIntern = () => {
+    setEditingIntern(null);
     setShowAddForm(true);
   };
 
   const handleCloseAddForm = () => {
     setShowAddForm(false);
+    setEditingIntern(null);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Bu intern-i silmək istədiyinizə əminsiniz?")) return;
+
+    try {
+      const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+      await axios.delete(`http://45.94.4.187:8081/api/v1/intern/${id}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      setInterns(interns.filter(intern => intern.id !== id));
+    } catch (error) {
+      console.error("Error deleting intern:", error);
+      alert("Xəta baş verdi: İntern silinə bilmədi.");
+    }
   };
 
   // Yeni intern əlavə etmə funksiyası
   const handleNewInternAdded = (newInternData: any) => {
+    // Check if name/surname are already separated
+    let firstName, lastName;
+    
+    if (newInternData.surname !== undefined) {
+      firstName = newInternData.name;
+      lastName = newInternData.surname;
+    } else {
+      // Legacy fallback
+      const nameParts = newInternData.name.split(' ');
+      firstName = nameParts[0];
+      lastName = nameParts.slice(1).join(' ') || '';
+    }
+
     const newIntern: Intern = {
-      id: interns.length + 1,
-      name: newInternData.name,
-      surname: newInternData.surname,
+      // Prioritize the ID returned from server, fallback to generated one only if necessary
+      id: newInternData.id ? newInternData.id : (interns.length > 0 ? Math.max(...interns.map(i => i.id)) + 1 : 1),
+      name: firstName,
+      surname: lastName,
       phone: newInternData.phone,
-      level: newInternData.experience as 'Junior' | 'Middle' | 'Senior'
+      email: newInternData.email,
+      status: (newInternData.status ? newInternData.status.toUpperCase() : 'JUNIOR') as 'JUNIOR' | 'MIDDLE' | 'SENIOR'
     };
     
     setInterns([...interns, newIntern]);
     setShowAddForm(false);
+  };
+
+  const handleInternUpdated = (updatedData: any) => {
+    let firstName, lastName;
+    
+    if (updatedData.surname !== undefined) {
+      firstName = updatedData.name;
+      lastName = updatedData.surname;
+    } else {
+      const nameParts = updatedData.name.split(' ');
+      firstName = nameParts[0];
+      lastName = nameParts.slice(1).join(' ') || '';
+    }
+
+    setInterns(interns.map(intern => 
+      intern.id === updatedData.id 
+        ? {
+            ...intern,
+            name: firstName,
+            surname: lastName,
+            phone: updatedData.phone,
+            email: updatedData.email,
+            status: (updatedData.status ? updatedData.status.toUpperCase() : 'JUNIOR') as 'JUNIOR' | 'MIDDLE' | 'SENIOR'
+          }
+        : intern
+    ));
+    setShowAddForm(false);
+    setEditingIntern(null);
   };
 
   const toggleDropdown = (id: number) => {
@@ -81,11 +196,12 @@ const InternManagementPanel: React.FC = () => {
     setIsVisible(false);
   };
 
-  const getLevelColor = (level: 'Junior' | 'Middle' | 'Senior') => {
-    switch (level) {
-      case 'Junior': return 'bg-blue-900/30 text-blue-300 border-blue-700/40';
-      case 'Middle': return 'bg-yellow-900/30 text-yellow-300 border-yellow-700/40';
-      case 'Senior': return 'bg-purple-900/30 text-purple-300 border-purple-700/40';
+  const getStatusColor = (status: 'JUNIOR' | 'MIDDLE' | 'SENIOR') => {
+    switch (status) {
+      case 'JUNIOR': return 'bg-blue-900/30 text-blue-300 border-blue-700/40';
+      case 'MIDDLE': return 'bg-yellow-900/30 text-yellow-300 border-yellow-700/40';
+      case 'SENIOR': return 'bg-purple-900/30 text-purple-300 border-purple-700/40';
+      default: return 'bg-gray-900/30 text-gray-300 border-gray-700/40';
     }
   };
 
@@ -162,6 +278,13 @@ const InternManagementPanel: React.FC = () => {
                           >
                             <FiEdit className="w-3.5 h-3.5" />
                           </button>
+                          <button
+                            onClick={() => handleDelete(intern.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700/50 rounded-lg transition-colors opacity-80 group-hover:opacity-100"
+                            title="Sil"
+                          >
+                            <FiTrash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                         <p className="text-gray-400 text-xs">
                           📱 {intern.phone}
@@ -172,10 +295,10 @@ const InternManagementPanel: React.FC = () => {
                       <div className="relative w-full sm:w-auto">
                         <button
                           onClick={() => toggleDropdown(intern.id)}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${getLevelColor(intern.level)} transition-all hover:opacity-90 min-w-[110px] justify-between`}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${getStatusColor(intern.status)} transition-all hover:opacity-90 min-w-[110px] justify-between`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium">{intern.level}</span>
+                            <span className="text-xs font-medium">{intern.status}</span>
                           </div>
                           <FiChevronDown className={`w-3 h-3 transition-transform ${openDropdownId === intern.id ? 'rotate-180' : ''}`} />
                         </button>
@@ -189,37 +312,37 @@ const InternManagementPanel: React.FC = () => {
                             />
                             <div className="absolute z-30 w-full mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl overflow-hidden right-0">
                               <button
-                                onClick={() => handleLevelChange(intern.id, 'Junior')}
+                                onClick={() => handleStatusChange(intern.id, 'JUNIOR')}
                                 className={`w-full px-3 py-2.5 text-left flex items-center gap-2 hover:bg-gray-800 transition-colors ${
-                                  intern.level === 'Junior' ? 'bg-gray-800/60' : ''
+                                  intern.status === 'JUNIOR' ? 'bg-gray-800/60' : ''
                                 }`}
                               >
-                                <span className="text-xs font-medium text-blue-300">Junior</span>
-                                {intern.level === 'Junior' && (
+                                <span className="text-xs font-medium text-blue-300">JUNIOR</span>
+                                {intern.status === 'JUNIOR' && (
                                   <div className="ml-auto w-1 h-1 rounded-full bg-blue-400"></div>
                                 )}
                               </button>
                               
                               <button
-                                onClick={() => handleLevelChange(intern.id, 'Middle')}
+                                onClick={() => handleStatusChange(intern.id, 'MIDDLE')}
                                 className={`w-full px-3 py-2.5 text-left flex items-center gap-2 hover:bg-gray-800 transition-colors ${
-                                  intern.level === 'Middle' ? 'bg-gray-800/60' : ''
+                                  intern.status === 'MIDDLE' ? 'bg-gray-800/60' : ''
                                 }`}
                               >
-                                <span className="text-xs font-medium text-yellow-300">Middle</span>
-                                {intern.level === 'Middle' && (
+                                <span className="text-xs font-medium text-yellow-300">MIDDLE</span>
+                                {intern.status === 'MIDDLE' && (
                                   <div className="ml-auto w-1 h-1 rounded-full bg-yellow-400"></div>
                                 )}
                               </button>
                               
                               <button
-                                onClick={() => handleLevelChange(intern.id, 'Senior')}
+                                onClick={() => handleStatusChange(intern.id, 'SENIOR')}
                                 className={`w-full px-3 py-2.5 text-left flex items-center gap-2 hover:bg-gray-800 transition-colors ${
-                                  intern.level === 'Senior' ? 'bg-gray-800/60' : ''
+                                  intern.status === 'SENIOR' ? 'bg-gray-800/60' : ''
                                 }`}
                               >
-                                <span className="text-xs font-medium text-purple-300">Senior</span>
-                                {intern.level === 'Senior' && (
+                                <span className="text-xs font-medium text-purple-300">SENIOR</span>
+                                {intern.status === 'SENIOR' && (
                                   <div className="ml-auto w-1 h-1 rounded-full bg-purple-400"></div>
                                 )}
                               </button>
@@ -248,6 +371,8 @@ const InternManagementPanel: React.FC = () => {
         <InternAddPanel 
           onClose={handleCloseAddForm}
           onInternAdded={handleNewInternAdded}
+          onInternUpdated={handleInternUpdated}
+          initialData={editingIntern}
         />
       )}
     </>

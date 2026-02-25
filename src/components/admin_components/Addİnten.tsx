@@ -1,21 +1,46 @@
 // components/InternAddPanel.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { FiX, FiChevronDown } from 'react-icons/fi';
+import axios from 'axios';
 
 interface InternAddPanelProps {
   onClose: () => void;
   onInternAdded?: (internData: any) => void;
+  onInternUpdated?: (updatedIntern: any) => void;
+  initialData?: any;
 }
 
-const InternAddPanel: React.FC<InternAddPanelProps> = ({ onClose, onInternAdded }) => {
+const InternAddPanel: React.FC<InternAddPanelProps> = ({ onClose, onInternAdded, onInternUpdated, initialData }) => {
   const [formData, setFormData] = useState({
     name: '',
-    surname: '',
+    email: '',
     phone: '',
     experience: 'Junior'
   });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (initialData) {
+      // Ensure surname validation checks for string "undefined" or "null" which might come from backend or previous errors
+      const safeSurname = (initialData.surname && initialData.surname !== 'undefined' && initialData.surname !== 'null') 
+        ? initialData.surname 
+        : '';
+        
+      const fullName = safeSurname 
+        ? `${initialData.name} ${safeSurname}` 
+        : initialData.name;
+
+      setFormData({
+        name: fullName.trim(),
+        email: initialData.email || '',
+        phone: initialData.phone || '',
+        experience: initialData.status 
+          ? initialData.status.charAt(0).toUpperCase() + initialData.status.slice(1).toLowerCase() 
+          : 'Junior'
+      });
+    }
+  }, [initialData]);
 
   // Escape tuşu ilə bağlama
   useEffect(() => {
@@ -62,20 +87,66 @@ const InternAddPanel: React.FC<InternAddPanelProps> = ({ onClose, onInternAdded 
     setIsDropdownOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form data:', formData);
     
-    if (onInternAdded) {
-      onInternAdded(formData);
+    try {
+      // Use exact schema provided: { name, email, phone, status }
+      const apiPayload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        status: formData.experience.toUpperCase()
+      };
+
+      const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+      
+      let responseData;
+
+      if (initialData) {
+        // Edit mode
+        const response = await axios.put(`http://45.94.4.187:8081/api/v1/intern/${initialData.id}`, apiPayload, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        responseData = response.data;
+        
+        if (onInternUpdated) {
+          // Prefer server response, fallback to payload + id
+          const updatedIntern = responseData || { ...apiPayload, id: initialData.id };
+          // Ensure status matches if server returns something else or nothing
+          if (!updatedIntern.status) updatedIntern.status = apiPayload.status;
+          
+          onInternUpdated(updatedIntern);
+        }
+      } else {
+        // Add mode
+        // Change this URL if you have a base URL config or environment variable
+        const response = await axios.post("http://45.94.4.187:8081/api/v1/intern", apiPayload, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        responseData = response.data;
+
+        if (onInternAdded) {
+          onInternAdded(responseData || apiPayload);
+        }
+      }
+      
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        experience: 'Junior'
+      });
+      onClose();
+    } catch (error) {
+      console.error(initialData ? "Error updating intern:" : "Error adding intern:", error);
+      // Optionally handle error display here
     }
-    
-    setFormData({
-      name: '',
-      surname: '',
-      phone: '',
-      experience: 'Junior'
-    });
   };
 
   const handleCancel = () => {
@@ -84,8 +155,8 @@ const InternAddPanel: React.FC<InternAddPanelProps> = ({ onClose, onInternAdded 
 
   const experienceOptions = [
     { value: 'Junior', label: 'Junior' },
-    { value: 'Junior+', label: 'Junior+' },
-    { value: 'TeamLead', label: 'TeamLead' }
+    { value: 'Middle', label: 'Middle' },
+    { value: 'Senior', label: 'Senior' }
   ];
 
   return (
@@ -117,7 +188,7 @@ const InternAddPanel: React.FC<InternAddPanelProps> = ({ onClose, onInternAdded 
             {/* Kart Başlığı */}
             <div className="p-4">
               <h2 className="text-lg font-semibold text-white text-center">
-                İntern Əlavə Et
+                {initialData ? 'İntern Düzəliş Et' : 'İntern Əlavə Et'}
               </h2>
             </div>
 
@@ -142,8 +213,21 @@ const InternAddPanel: React.FC<InternAddPanelProps> = ({ onClose, onInternAdded 
                 />
               </div>
 
-              {/* Soyad Inputu */}
-             
+              {/* Email Inputu */}
+              <div>
+                <label className="block text-xs font-medium text-gray-300 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Email daxil edin"
+                  required
+                />
+              </div>
 
               {/* Əlaqə Nömrəsi Inputu */}
               <div>

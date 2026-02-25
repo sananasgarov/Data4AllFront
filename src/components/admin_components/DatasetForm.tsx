@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect, ChangeEvent, DragEvent } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { 
   FiUpload, 
   FiUser, 
@@ -33,6 +35,9 @@ interface Errors {
 }
 
 const DatasetProcessingForm: React.FC = () => {
+  const location = useLocation();
+  const editDataset = location.state?.dataset;
+  
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     email: '',
@@ -43,6 +48,45 @@ const DatasetProcessingForm: React.FC = () => {
     recaptchaToken: ''
   });
 
+  // Pre-fill form if editing
+  useEffect(() => {
+    if (editDataset && editDataset.id) {
+       const fetchFullDetails = async () => {
+         try {
+           setIsLoading(true);
+           // FAKE DATA SIMULATION
+           const fakeData = {
+              author: "Fake Author",
+              email: "fake@example.com",
+              phone: "+994 50 000 00 00",
+              description: "This is a fake description for testing purposes.",
+              title: "visualization",
+              fileUrl: "http://example.com/fakefile.csv"
+           };
+
+           // Use real data if available from editDataset props, otherwise fallback to fakeData
+           setFormData(prev => ({
+             ...prev,
+             fullName: editDataset.name ? (editDataset.name + ' ' + (editDataset.surname || '')) : fakeData.author,
+             email: editDataset.email || fakeData.email,
+             phone: editDataset.phone || fakeData.phone,
+             notes: editDataset.description || fakeData.description,
+             requirement: editDataset.title || fakeData.title
+           }));
+
+           if (fakeData.fileUrl) {
+             setIsUploaded(true);
+           }
+         } catch (error) {
+           console.error("Error fetching dataset details for edit:", error);
+         } finally {
+            setIsLoading(false);
+         }
+       };
+       fetchFullDetails();
+    }
+  }, [editDataset]);
+
   const [selectedRequirement, setSelectedRequirement] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [isUploaded, setIsUploaded] = useState<boolean>(false);
@@ -51,6 +95,7 @@ const DatasetProcessingForm: React.FC = () => {
   const [errors, setErrors] = useState<Errors>({});
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string>('Müraciətiniz qəbul edildi. Tezliklə əlaqə saxlanılacaq.');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -184,6 +229,55 @@ const DatasetProcessingForm: React.FC = () => {
     setFormData(prev => ({ ...prev, recaptchaToken: '' }));
   };
 
+  const handleDelete = async () => {
+    if (!editDataset || !editDataset.id) return;
+    
+    if (!window.confirm("Bu dataseti silmək istədiyinizə əminsiniz?")) return;
+
+    setIsLoading(true);
+    try {
+      // FAKE DELETE SIMULATION
+      console.log('Deleting dataset:', editDataset.id);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      /*
+      const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+      await axios.delete(`http://45.94.4.187:8081/api/v1/dashboard/datasets/${editDataset.id}`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      */
+      
+      setSuccessMessage("Dataset uğurla silindi.");
+      setSubmitSuccess(true);
+      
+      setTimeout(() => {
+        setFormData({
+          fullName: '',
+          email: '',
+          phone: '',
+          requirement: '',
+          notes: '',
+          file: null,
+          recaptchaToken: ''
+        });
+        setSelectedRequirement('');
+        setIsUploaded(false);
+        setRecaptchaVerified(false);
+        setSubmitSuccess(false);
+        setErrors({});
+        
+        if (recaptchaRef.current) {
+          recaptchaRef.current.reset();
+        }
+      }, 2000);
+
+    } catch (error) {
+      console.error("Delete error:", error);
+      setErrors({ submit: 'Silmə zamanı xəta baş verdi' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     const newErrors: Errors = {};
     
@@ -192,9 +286,14 @@ const DatasetProcessingForm: React.FC = () => {
       newErrors.email = 'Düzgün email daxil edin';
     }
     if (!formData.phone.trim()) newErrors.phone = 'Telefon tələb olunur';
-    if (!selectedRequirement) newErrors.requirement = 'Tələb seçilməlidir';
-    if (!formData.file) newErrors.file = 'Fayl yüklənməlidir';
-    if (!recaptchaVerified) newErrors.recaptcha = 'Təsdiqləmə tələb olunur';
+    // Remove strict validation for fields that might not change during edit if desired, 
+    // but typically validation for required fields should remain.
+    // If editing, maybe file is optional? For now keeping it required or check logic.
+    if (!editDataset) { 
+        if (!selectedRequirement) newErrors.requirement = 'Tələb seçilməlidir';
+        if (!formData.file) newErrors.file = 'Fayl yüklənməlidir';
+        if (!recaptchaVerified) newErrors.recaptcha = 'Təsdiqləmə tələb olunur';
+    }
     
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -204,9 +303,45 @@ const DatasetProcessingForm: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Form data:', formData);
+      if (editDataset && editDataset.id) {
+         // FAKE UPDATE SIMULATION
+         console.log('Updating dataset with fake data:', formData);
+         await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+         /*
+         // Real API call commented out
+         const accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjEyMzRAZ21haWwuY29tIiwiaWF0IjoxNzcyMDQzNjEyLCJleHAiOjE3NzIwNDcyMTJ9.-bezA_y_b1MEL5L20d0yvx7YQP9sdTCQXP7oyZW0On4";
+         
+         const nameParts = formData.fullName.trim().split(' ');
+         const name = nameParts[0];
+         const surname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+         const updatePayload = {
+           id: editDataset.id,
+           name: name,
+           surname: surname || '',
+           email: formData.email,
+           phone: formData.phone,
+         };
+         
+         await axios.put(`http://45.94.4.187:8081/api/v1/dashboard/update-dataset/${editDataset.id}`, {
+            name: name,
+            surname: surname,
+            email: formData.email,
+            phone: formData.phone,
+            title: formData.requirement,
+            description: formData.notes
+         }, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+         });
+         */
+         
+      } else {
+        // Mock POST Request (Existing logic)
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        console.log('Form data:', formData);
+      }
       
+      setSuccessMessage(editDataset ? "Dataset uğurla yeniləndi." : "Müraciətiniz qəbul edildi. Tezliklə əlaqə saxlanılacaq.");
       setSubmitSuccess(true);
       
       setTimeout(() => {
@@ -231,6 +366,7 @@ const DatasetProcessingForm: React.FC = () => {
       }, 2000);
       
     } catch (error) {
+      console.error("Submit error:", error);
       setErrors({ submit: 'Xəta baş verdi' });
     } finally {
       setIsLoading(false);
@@ -265,7 +401,7 @@ const DatasetProcessingForm: React.FC = () => {
             <FiCheck className="w-8 h-8 sm:w-10 sm:h-10 text-green-400" />
           </div>
           <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Uğurlu!</h3>
-          <p className="text-gray-400 text-sm sm:text-base">Müraciətiniz qəbul edildi. Tezliklə əlaqə saxlanılacaq.</p>
+          <p className="text-gray-400 text-sm sm:text-base">{successMessage}</p>
         </div>
       </div>
     );
@@ -443,11 +579,11 @@ const DatasetProcessingForm: React.FC = () => {
                 {isUploaded ? (
                   <div className="text-center">
                     <FiCheck className="w-6 h-6 sm:w-8 sm:h-8 text-green-400 mx-auto mb-2" />
-                    <p className="text-white text-xs sm:text-sm font-medium mb-1 truncate" title={formData.file?.name}>
-                      {formData.file?.name}
+                    <p className="text-white text-xs sm:text-sm font-medium mb-1 truncate" title={formData.file?.name || 'Mövcud fayl'}>
+                      {formData.file?.name || 'Mövcud fayl'}
                     </p>
                     <p className="text-xs text-gray-400 mb-2">
-                      {(formData.file!.size / (1024 * 1024)).toFixed(2)} MB
+                      {formData.file ? `${(formData.file.size / (1024 * 1024)).toFixed(2)} MB` : ''}
                     </p>
                     <button
                       type="button"
@@ -559,12 +695,24 @@ const DatasetProcessingForm: React.FC = () => {
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span className="text-xs sm:text-sm">Göndərilir...</span>
+                  <span className="text-xs sm:text-sm">{editDataset ? 'Yenilənir...' : 'Göndərilir...'}</span>
                 </>
               ) : (
-                'Göndər'
+                editDataset ? 'Yenilə' : 'Göndər'
               )}
             </button>
+            
+            {editDataset && (
+               <button
+                 type="button"
+                 onClick={handleDelete}
+                 disabled={isLoading}
+                 className="px-4 sm:px-6 bg-red-600/20 hover:bg-red-600/40 text-red-400 hover:text-white rounded-lg sm:rounded-xl font-medium transition-all border border-red-600/30 hover:border-red-500 text-sm sm:text-base py-2.5 sm:py-3 xs:w-auto w-full"
+               >
+                 Sil
+               </button>
+            )}
+
             <button
               type="button"
               onClick={handleReset}
